@@ -23,14 +23,20 @@ bandwidth = 0.05 # microns #TODO - Treat chromaticity properly (photonic)
 # Collecting area:
 pupil_fraction = 0.5
 pupil_area = np.pi*4**2 * pupil_fraction
+n_apertures = 4 # Number of apertures
+pupil_diam = 2*(pupil_area/n_apertures / np.pi)**0.5
 
 # Wavefront properties
-deltaphi_sig = 0.02 # RMS wavefront across baseline in microns. #TODO - Make a function of wavefront
+r0 = 0.795 # Fried's parameter at ``wavelength'' before AO correction
+order_zernike = 8 # Order of Zernike  up to which wavefront correction is done
+wfe = 0.080 # RMS of the wavefront error in microns. Stands for a Strehl of 90% at 1.6 microns.
+deltaphi_sig = get_diff_piston(pupil_diam, r0, wavelength) # RMS wavefront across baseline in microns.
+# deltaphi_sig = 0.02
 deltaI_sig = 0.05 # RMS difference in injection between two inputs of baseline. #TODO - Make a function of wavefront
 
 # Throughputs:
 scexao_throughput = 0.2
-injection_efficiency = 0.2 #TODO - Make a function of wavefront
+injection_efficiency = get_injection(pupil_diam, r0, order_zernike, wl=wavelength, wfe=wfe) # if wl and wfe are define, they are used indtead of Noll's residuals
 
 # Companion contrast
 contrast = 1e-6
