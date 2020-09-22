@@ -163,26 +163,39 @@ def get_injection(diam, r0, order=1, geo_inj=0.8, wl=None, wfe=None):
     return geo_inj * strehl
     
     
-def get_diff_piston(diam, r0, wl):
+def get_diff_piston(diam, r0, wl, fromTT=False, baseline=5.55):
     """
     Get the RMS of the differential piston between 2 apertures.
     Source: https://ui.adsabs.harvard.edu/abs/1996ApOpt..35.3002K/abstract
     It is simply Delta_1 (1st order of Noll's residuals ie the piston) summed with itself, converted into OPD and take the square root.
     However, it seems it is quite over-estimated.
     And in the case of NRM-nulling, the shift of the fringes is mainly due to the tip-tilt.
-    #TODO: estimate the TT and deduce the corresponding shift of the fringes so that piston = baseline * angle of TT
+    
+    Another strategy is to estimate the TT and deduce the corresponding shift of the fringes so that piston = baseline * angle of TT
+    WARNING: this method does not take into account dedicated TT correction device.
     
     :Parameters:
     
-        **diam**: diameter of the aperture
+        **diam**: diameter of the aperture, in meter
         
-        **r0** : Fried's parameter at the considered wavelgnth
+        **r0** : Fried's parameter at the considered wavelength, in meter
     
         **wl** : wavelength of observation.
+                
+        **fromTT**: bool, optional
+            If ``True'', get the differential piston given the variance of the TT and the baseline
     
+        **baseline**: float, optional
+            Lenght of the baseline, in meter. Used if **fromTT** is ``True''.
     
     :Returns:
     
-        Root mean square of the differential piston in the same unit as **wl**.
+        Root mean square of the differential piston.
     """
-    return 0.228 * wl * (diam / r0)**(5/6)
+    
+    if fromTT:
+        varTT = 6.88/(2*np.pi**2) * (wl*1e-6)**2 * diam**(-1/3.) * r0**(-5/3.) # Variance of the TT in one direction. Source: Tyson, R.K. Principle of adaptive optics. Edn. 3rd, CRCpress, Boca Raton, 2011
+        return baseline * varTT**0.5
+    else:
+        piston = 0.228 * wl * (diam / r0)**(5/6)
+        return piston
