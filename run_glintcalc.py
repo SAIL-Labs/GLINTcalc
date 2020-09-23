@@ -31,14 +31,14 @@ r0 = 0.795 # Fried's parameter at ``wavelength'' before AO correction
 order_zernike = 8 # Order of Zernike  up to which wavefront correction is done
 wfe = 0.080 # RMS of the wavefront error in microns. Stands for a Strehl of 90% at 1.6 microns.
 r0_corr = (1.03 * (wavelength/(2*np.pi*wfe))**2)**(3/5) * pupil_diam # r0 of the corrected wavefront given wfe
-deltaphi_sig = get_diff_piston(pupil_diam, r0_corr, wavelength, True, 5.55) * 1e+6 # RMS wavefront across baseline in microns.
+deltaphi_sig = get_diff_piston(pupil_diam, r0_corr, wavelength, False, 5.55) # RMS wavefront across baseline in microns.
 # deltaphi_sig = 0.02
-deltaI_sig = 0.05 # RMS difference in injection between two inputs of baseline. #TODO - Make a function of wavefront
 
 # Throughputs:
 scexao_throughput = 0.2
-injection_efficiency = get_injection(pupil_diam, r0, order_zernike, wl=wavelength, wfe=wfe) # if wl and wfe are define, they are used indtead of Noll's residuals
+injection_efficiency, delta_inj = get_injection(pupil_diam, r0, order_zernike, wl=wavelength, wfe=wfe) # if wl and wfe are define, they are used indtead of Noll's residuals
 
+deltaI_sig = delta_inj * 2**0.5 # Injections in two apertures are assumed to be independent
 # Companion contrast
 contrast = 1e-6
 

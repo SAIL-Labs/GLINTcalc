@@ -160,7 +160,15 @@ def get_injection(diam, r0, order=1, geo_inj=0.8, wl=None, wfe=None):
         residuals = get_noll_residuals(diam, r0, order) # Get variance of the phase residuals after correction of the first N order of Zernike.
     strehl = np.exp(-residuals) # Marechal's approximation
     
-    return geo_inj * strehl
+    low_sr = 1 - 2 * (1 - strehl) # Lower bound of strehl. Source: Olivier Guyon's mail 2020-09-23 4:17 am
+    low_sr = max(low_sr, 0) # Previous relationship can give negative strehl, set a threshold at 0
+    total_range = 1 - low_sr
+    std_sr = total_range / 6 # We assume a Normal distribution of the injection which is what we observe
+    
+    inj =  geo_inj * strehl
+    std_inj = geo_inj * std_sr
+    
+    return inj, std_inj
     
     
 def get_diff_piston(diam, r0, wl, fromTT=False, baseline=5.55):
@@ -199,3 +207,4 @@ def get_diff_piston(diam, r0, wl, fromTT=False, baseline=5.55):
     else:
         piston = 0.228 * wl * (diam / r0)**(5/6)
         return piston
+    
